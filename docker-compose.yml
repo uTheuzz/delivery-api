@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  db:
+    container_name: db_delivery
+    image: mysql:latest
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: delivery
+      MYSQL_USER: delivery
+      MYSQL_PASSWORD: delivery
+    networks:
+      - delivery_network
+
+  composer:
+    container_name: composer_delivery
+    build:
+      context: './'
+    volumes:
+      - ./:/var/www
+    command: composer update
+
+  api:
+    container_name: api_delivery
+    depends_on:
+      - db
+      - composer
+    build:
+      context: './'
+    volumes:
+      - ./:/var/www
+    ports:
+      - 8000:80
+    networks:
+      - delivery_network
+
+networks:
+  delivery_network:
+    driver: bridge
+
+volumes:
+  db_data:
